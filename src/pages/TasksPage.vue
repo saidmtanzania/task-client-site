@@ -28,7 +28,7 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue';
 import { allTasks, createTasks } from '../http/tasks-api';
-import Task from '../components/tasks/Task.vue';
+import Task from '../components/tasks/Tasks.vue';
 import NewTask from '../components/tasks/NewTask.vue';
 
 const tasks = ref([]);
