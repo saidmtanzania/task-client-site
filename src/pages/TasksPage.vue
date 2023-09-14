@@ -7,7 +7,8 @@
                     <NewTask @added="handleAddedTask" />
 
                     <!-- List of uncompleted tasks -->
-                    <Task :tasks="uncompletedTask" />
+                    <Task :tasks="uncompletedTask" @updated="handleUpdatedTask" @completed="handleCompletedTask"
+                        @removed="handleRemovedTasks" />
 
                     <!-- Show toggle button -->
                     <div class="text-center my-3" v-show="showToggleCompletedBtn">
@@ -19,7 +20,8 @@
                     </div>
 
                     <!-- List of completed tasks -->
-                    <Task :tasks="completedTask" :show="completedTaskIsVisible && showCompletedTasks" />
+                    <Task :tasks="completedTask" @updated="handleUpdatedTask" @completed="handleCompletedTask"
+                        :show="completedTaskIsVisible && showCompletedTasks" @removed="handleRemovedTasks" />
                 </div>
             </div>
         </div>
@@ -27,7 +29,7 @@
 </template>
 <script setup>
 import { computed, onMounted, ref } from 'vue';
-import { allTasks, createTasks } from '../http/tasks-api';
+import { allTasks, createTasks, updateTasks, completeTask, removeTasks } from '../http/tasks-api';
 import Task from '../components/tasks/Tasks.vue';
 import NewTask from '../components/tasks/NewTask.vue';
 
@@ -46,6 +48,26 @@ const showCompletedTasks = ref(false);
 
 const handleAddedTask = async (newTask) => {
     const { data: createdTask } = await createTasks(newTask);
-    tasks.value.unshift(createTask.data);
+    tasks.value.unshift(createdTask.data);
+}
+
+const handleUpdatedTask = async (task) => {
+    const { data: updatedTask } = await updateTasks(task.id, { name: task.name })
+
+    const currentTask = tasks.value.find(item => item.id === task.id)
+    currentTask.name = updatedTask.data.name
+}
+
+const handleCompletedTask = async (task) => {
+    const { data: updatedTask } = await completeTask(task.id, { is_completed: task.is_completed })
+
+    const currentTask = tasks.value.find(item => item.id === task.id)
+    currentTask.is_completed = updatedTask.data.is_completed
+}
+
+const handleRemovedTasks = async (task) => {
+    await removeTasks(task.id)
+    const index = tasks.value.findIndex(item => item.id === task.id)
+    tasks.value.splice(index, 1)
 }
 </script>
